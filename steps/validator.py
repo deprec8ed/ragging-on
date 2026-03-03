@@ -7,6 +7,10 @@ class FileType(Enum):
     UNSUPPORTED = "unsupported"
 
 
-def validate_file(filepath):
-    if Path(filepath).suffix == toLower(".pdf"):
+def validate_file(filepath: Path) -> FileType:
+    if filepath.suffix.lower() == ".pdf":
         return FileType.PDF
+    elif filepath.suffix.lower() == ".docx":
+        return FileType.DOCX
+    else:
+        return FileType.UNSUPPORTED
