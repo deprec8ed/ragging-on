@@ -53,7 +53,8 @@ def structure_document(doc: DoclingDocument, filepath: Path) -> DocumentNode:
                 level=level,
                 node_type=NodeType.SECTION_HEADER,
                 parent=stack[-1],
-                text=get_item_text(item)
+                text=get_item_text(item),
+                page_number=item.prov[0].page_no if item.prov else None
             )
             stack[-1].children.append(node)
             stack.append(node)
@@ -66,6 +67,7 @@ def structure_document(doc: DoclingDocument, filepath: Path) -> DocumentNode:
                 node_type=node_type,
                 text=get_item_text(item),
                 parent=stack[-1],
+                page_number=item.prov[0].page_no if item.prov else None
             )
             stack[-1].children.append(node)
 
@@ -75,6 +77,7 @@ def structure_document(doc: DoclingDocument, filepath: Path) -> DocumentNode:
                     level=level,
                     node_type=NodeType.LIST,
                     parent=stack[-1],
+                    page_number=item.prov[0].page_no if item.prov else None
                 )
                 stack[-1].children.append(list_node)
                 stack.append(list_node)
@@ -83,6 +86,7 @@ def structure_document(doc: DoclingDocument, filepath: Path) -> DocumentNode:
                 node_type=NodeType.LIST_ITEM,
                 parent=stack[-1],
                 text=get_item_text(item),
+                page_number=item.prov[0].page_no if item.prov else None
             )
             stack[-1].children.append(list_item_node)
 
