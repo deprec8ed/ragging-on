@@ -1,6 +1,7 @@
 from models.document import DocumentNode, NodeType
 from docling_core.types.doc import DoclingDocument, DocItemLabel
-
+from typing import Optional
+from pathlib import Path
 
 LABEL_MAP = {
     DocItemLabel.TITLE: NodeType.TITLE,
@@ -16,9 +17,18 @@ def map_label_to_node_type(label: DocItemLabel) -> NodeType:
     return LABEL_MAP.get(label, NodeType.SKIP)
 
 
-def structure_document(doc: DoclingDocument) -> DocumentNode:
-    root = None
+def get_item_text(item) -> Optional[str]:
+    return getattr(item, "text", None)
+
+
+def structure_document(doc: DoclingDocument, filepath: Path) -> DocumentNode:
+    root = DocumentNode(
+        level=0,
+        node_type=NodeType.TITLE,
+        title=filepath.stem,
+    )
     stack = []
+    stack.append(root)
     previous_node_type = None
 
     for item, level in doc.iterate_items():
@@ -29,7 +39,7 @@ def structure_document(doc: DoclingDocument) -> DocumentNode:
 
         if node_type == NodeType.TITLE:
             root = DocumentNode(
-                title=item.text,
+                title=get_item_text(item),
                 level=0,
                 node_type=NodeType.TITLE,
             )
@@ -37,20 +47,13 @@ def structure_document(doc: DoclingDocument) -> DocumentNode:
             previous_node_type = node_type
 
         if node_type == NodeType.SECTION_HEADER:
-            if not stack:
-                root = DocumentNode(
-                    title="unknown",
-                    level=0,
-                    node_type=NodeType.TITLE,
-                )
-                stack.append(root)
             while stack[-1].level >= level:
                 stack.pop()
             node = DocumentNode(
                 level=level,
                 node_type=NodeType.SECTION_HEADER,
                 parent=stack[-1],
-                text=item.text
+                text=get_item_text(item)
             )
             stack[-1].children.append(node)
             stack.append(node)
@@ -58,17 +61,10 @@ def structure_document(doc: DoclingDocument) -> DocumentNode:
         if node_type in (NodeType.TEXT, NodeType.TABLE, NodeType.PICTURE):
             if previous_node_type == NodeType.LIST_ITEM:
                 stack.pop()
-            if not stack:
-                root = DocumentNode(
-                    title="unknown_section",
-                    level=0,
-                    node_type=NodeType.SECTION_HEADER,
-                )
-                stack.append(root)
             node = DocumentNode(
                 level=level,
                 node_type=node_type,
-                text=item.text,
+                text=get_item_text(item),
                 parent=stack[-1],
             )
             stack[-1].children.append(node)
@@ -86,7 +82,7 @@ def structure_document(doc: DoclingDocument) -> DocumentNode:
                 level=level,
                 node_type=NodeType.LIST_ITEM,
                 parent=stack[-1],
-                text=item.text,
+                text=get_item_text(item),
             )
             stack[-1].children.append(list_item_node)
 

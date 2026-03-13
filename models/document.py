@@ -17,9 +17,9 @@ class NodeType(Enum):
 
 @dataclass
 class DocumentNode:
-    title: Optional[str]
     level: int
     node_type: NodeType
+    title: Optional[str] = None
     text: Optional[str] = None
     parent: Optional[DocumentNode] = None
     children: list[DocumentNode] = field(default_factory=list)
